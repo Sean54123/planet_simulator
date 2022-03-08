@@ -33,7 +33,6 @@ G = 6.67 * 10 ** - 11
 #https://research.wdss.io/planetary-motion/#Moving-to-3D
 path_points = []
 
-
 class Planet(object):
     def __init__(self, m, r, pos, vel, accel = [0 , 0]):
         self.mass = m
