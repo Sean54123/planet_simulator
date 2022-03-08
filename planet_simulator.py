@@ -8,8 +8,6 @@ import math
 import pygame
 import scipy
 
-
-
 pygame.init()
 
 # Simple pygame program
