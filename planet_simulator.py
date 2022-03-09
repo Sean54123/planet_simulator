@@ -22,9 +22,11 @@ screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 
 # Setup the clock for a decent framerate
 clock = pygame.time.Clock()
-FPS = 6000
+FPS = 60
 G = 6.67 * 10 ** - 11
-
+AU = 148.49 * 10 ** 9 #used to scale distance in force calcs
+TIME_STEP = (1 / FPS) * 5 * 10 ** 6 #1 timestep per second
+TIME_STEP = (1 / FPS)
 
 #See here for example of how to organise:
 #https://github.com/techwithtim/Pygame-Car-Racer/blob/main/tutorial1-code/main.py
@@ -32,7 +34,6 @@ G = 6.67 * 10 ** - 11
 #First get single planet working in a circle
 #https://research.wdss.io/planetary-motion/#Moving-to-3D
 path_points = []
-
 
 class Planet(object):
     def __init__(self, m, r, pos, vel, accel = [0 , 0]):
@@ -52,13 +53,17 @@ class Planet(object):
     def get_pos(self):
         return ([self.x_pos, self.y_pos])
         
+        
     def update_pos(self):
-        self.x_pos += (self.x_vel * 1 / FPS) - 0.5 * self.x_accel * (1 / FPS) ** 2  # need to add accel
-        self.y_pos += (self.y_vel * 1 / FPS) - 0.5 * self.y_accel * (1 / FPS) ** 2 
+        #s = vt - 1/2 at^2
+        self.x_pos += (self.x_vel * TIME_STEP) - 0.5 * self.x_accel * (TIME_STEP) ** 2 
+        self.y_pos += (self.y_vel * TIME_STEP) - 0.5 * self.y_accel * (TIME_STEP) ** 2 
+        print("sx , sy = ", [self.x_pos , self.y_pos])
         
     def update_vel(self):
-        self.x_vel += self.x_accel * 1 / FPS
-        self.y_vel += self.y_accel * 1 / FPS
+        #v = u + at
+        self.x_vel += self.x_accel * TIME_STEP
+        self.y_vel += self.y_accel * TIME_STEP
         self.update_pos()
         print("vx , vy = ", [self.x_vel , self.y_vel])
         
@@ -67,7 +72,6 @@ class Planet(object):
         self.y_accel = accel[1]
         self.update_vel()
         
-        
     def draw(self): 
         for point in path_points:
             pygame.draw.circle(screen, (0, 255, 0), (point[0], point[1]), 1)
@@ -75,16 +79,12 @@ class Planet(object):
         
         pygame.draw.circle(screen, (0, 0, 255), (self.x_pos, self.y_pos), self.radius)
         
-       # pygame.draw.circle(screen, (255, 0, 0), (SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2), 15)
-        
-        
     def calc_force(self, pos_other, mass_other):
         
-        r_distance = ((self.x_pos - pos_other[0])** 2 + (self.y_pos - pos_other[1])** 2) ** 0.5
-        
+        r_distance = (AU / 100)*((self.x_pos - pos_other[0])** 2 + (self.y_pos - pos_other[1])** 2) ** 0.5
         magnitude = G * mass_other * self.mass / (r_distance ** 2)# 1/r^2 for now
         
-        unit_vector = [((pos_other[0] - self.x_pos) / r_distance), ((pos_other[1] - self.y_pos) / r_distance)]
+        unit_vector = [((AU / 100)*(pos_other[0] - self.x_pos) / r_distance), ((AU / 100)*(pos_other[1] - self.y_pos) / r_distance)]
         
         x_force = unit_vector[0] * magnitude
         y_force = unit_vector[1] * magnitude
@@ -93,9 +93,10 @@ class Planet(object):
         return force    
 
 
-Earth = Planet(9 * 10 ** 15, 10, [200, 225] , [-0.5, 520])
-Moon = Planet(8.3 * 10 ** 13, 6, [195, 225] , [0, 700])
-Sun = Planet(1 * 10 ** 18, 15, [SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 0])
+Earth = Planet(6 * 10 ** 24, 10, [200, 225] , [-0.1, 0.4])
+Moon = Planet(7 * 10 ** 22, 6, [195, 225] , [-0.11, 0.41])
+Sun = Planet(2 * 10 ** 30, 15, [SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 0])
+
 
 planet_list = [Earth, Moon, Sun]
 
