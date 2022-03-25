@@ -11,8 +11,8 @@ import scipy
 pygame.init()
 
 # Define constants for the screen width and height
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 1000
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 1200
 
 # Create the screen object
 # The size is determined by the constant SCREEN_WIDTH and SCREEN_HEIGHT
@@ -25,7 +25,11 @@ G = 6.67 * 10 ** - 11
 AU = 1.50* 10 ** 11 #used to scale distance in force calcs
 DISTANCE_SCALE = AU / 100
 TIME_STEP = (1 / FPS) * 5 * 10 **6
-RGB_COLOURS = {"WHITE": (255, 255, 255), "RED": (255, 0, 0) , "BLUE": (0, 0, 255)}
+RGB_COLOURS = {"WHITE": (255, 255, 255), "RED": (255, 0, 0) , "BLUE": (0, 0, 255), "ORANGE": (255, 153, 0), "GREY": (102, 102, 153), "GREEN": (102, 153, 153)}
+
+#extension: update with current/historical planet starting positions
+#https://ssd.jpl.nasa.gov/horizons/app.html#/
+#https://ssd-api.jpl.nasa.gov/doc/horizons.html
 
 #See here for example of how to organise:
 #https://github.com/techwithtim/Pygame-Car-Racer/blob/main/tutorial1-code/main.py
@@ -97,10 +101,18 @@ class Planet(object):
         #draw planet
         pygame.draw.circle(screen, self.colour, (self.x_pos / DISTANCE_SCALE, self.y_pos / DISTANCE_SCALE), self.radius)
 
-Earth = Planet(6 * 10 ** 24, 10, RGB_COLOURS["BLUE"], [100 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [-5 * 10 ** 3 , 2 * 10 ** 4])
-Moon = Planet(7 * 10 ** 22, 6, RGB_COLOURS["WHITE"], [120 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [-5.1 * 10 ** 3 , 2.1 * 10 ** 4])
-Sun = Planet(2 * 10 ** 30, 15, RGB_COLOURS["RED"], [SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 0])
-planet_list = [Earth, Moon, Sun]
+#Earth = Planet(6 * 10 ** 24, 10, RGB_COLOURS["BLUE"], [100 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [-5 * 10 ** 3 , 2 * 10 ** 4])
+#Moon = Planet(7 * 10 ** 22, 6, RGB_COLOURS["WHITE"], [120 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [-5.1 * 10 ** 3 , 2.1 * 10 ** 4])
+
+#REALISTIC MASSESS/Orbital veloicties
+Mercury = Planet(3.3 * 10 ** 23, 4, RGB_COLOURS["GREY"], [38 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 4.7 * 10 ** 4])
+Venus = Planet(4.9 * 10 ** 24, 8, RGB_COLOURS["WHITE"], [72 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 3.5 * 10 ** 4])
+Earth = Planet(6 * 10 ** 24, 8, RGB_COLOURS["BLUE"], [100 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 3 * 10 ** 4])
+Mars = Planet(6.4 * 10 ** 23, 4, RGB_COLOURS["RED"], [152 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 2.4 * 10 ** 4])
+Jupiter = Planet(1.9 * 10 ** 27, 12, RGB_COLOURS["GREEN"], [520 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 1.3 * 10 ** 4])
+Sun = Planet(2 * 10 ** 30, 15, RGB_COLOURS["ORANGE"], [SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 0])
+
+planet_list = [Mercury, Venus, Earth, Mars, Jupiter, Sun]
 
 #initialising dict to plot orbit path
 path_points = {}
@@ -113,12 +125,13 @@ while running:
     clock.tick(FPS)
     # Fill the background black
     screen.fill((0, 0, 0))
-
     # Did the user click the window close button?
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
+    
+    Mouse_x, Mouse_y = pygame.mouse.get_pos()
+    print(Mouse_x, Mouse_y)
     for Planet_i in planet_list:
         force = [0, 0]
         for Planet_j in planet_list:
