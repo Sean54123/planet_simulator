@@ -9,13 +9,10 @@ import pygame
 import scipy
 
 pygame.init()
-
 # Define constants for the screen width and height
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 1200
-
 # Create the screen object
-# The size is determined by the constant SCREEN_WIDTH and SCREEN_HEIGHT
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 
 # Setup the clock for a decent framerate
@@ -26,20 +23,17 @@ AU = 1.50* 10 ** 11 #used to scale distance in force calcs
 DISTANCE_SCALE = AU / 100
 TIME_STEP = (1 / FPS) * 5 * 10 **6
 RGB_COLOURS = {"WHITE": (255, 255, 255), "RED": (255, 0, 0) , "BLUE": (0, 0, 255), "ORANGE": (255, 153, 0), "GREY": (102, 102, 153), "GREEN": (102, 153, 153)}
+PLANET_FONT = pygame.font.SysFont("cambriamath", 20)
 
 #extension: update with current/historical planet starting positions
 #https://ssd.jpl.nasa.gov/horizons/app.html#/
 #https://ssd-api.jpl.nasa.gov/doc/horizons.html
 
-#See here for example of how to organise:
-#https://github.com/techwithtim/Pygame-Car-Racer/blob/main/tutorial1-code/main.py
-#planet class, update position based on current velocity
-#First get single planet working in a circle
-#https://research.wdss.io/planetary-motion/#Moving-to-3D
-path_points = []
+#add zoom feature by multpling object plot coordianates by zoom factor (after adjusting for the non 0 origin in pygame)
 
 class Planet(object):
-    def __init__(self, m, r, colour, pos, vel, accel = [0 , 0]):
+    def __init__(self, name, m, r, colour, pos, vel, accel = [0 , 0]):
+        self.name = name
         self.mass = m
         self.radius = r
         self.colour = colour 
@@ -49,25 +43,26 @@ class Planet(object):
         self.y_vel = vel[1] 
         self.x_accel = accel[0] 
         self.y_accel = accel[1] 
-          
+        
+    def get_planet_name(self):
+        return self.name
+    
     def get_mass(self):
-        return (self.mass)
+        return self.mass
     
     def get_pos(self):
-        return ([self.x_pos, self.y_pos])
+        return [self.x_pos, self.y_pos]
         
     def update_pos(self):
         #s = vt - 1/2 at^2
         self.x_pos += (self.x_vel * TIME_STEP) - 0.5 * self.x_accel * (TIME_STEP) ** 2 
         self.y_pos += (self.y_vel * TIME_STEP) - 0.5 * self.y_accel * (TIME_STEP) ** 2 
-        print("sx , sy = ", [self.x_pos , self.y_pos])
         
     def update_vel(self):
         #v = u + at
         self.x_vel += self.x_accel * TIME_STEP
         self.y_vel += self.y_accel * TIME_STEP
         self.update_pos()
-        print("vx , vy = ", [self.x_vel , self.y_vel])
         
     def update_accel(self, accel):
         self.x_accel = accel[0]
@@ -89,7 +84,7 @@ class Planet(object):
         force = [x_force, y_force]     
         return force    
     
-    def draw(self): 
+    def draw_planet(self): 
         #draw path
         for i, point in enumerate(path_points[self]):
             #only draw point outside of planet radius
@@ -100,20 +95,24 @@ class Planet(object):
         path_points[self].append([self.x_pos / DISTANCE_SCALE, self.y_pos / DISTANCE_SCALE])
         #draw planet
         pygame.draw.circle(screen, self.colour, (self.x_pos / DISTANCE_SCALE, self.y_pos / DISTANCE_SCALE), self.radius)
+        
+    def draw_planet_text(self):
+            text = PLANET_FONT.render(self.get_planet_name(), False, RGB_COLOURS["WHITE"])
+            screen.blit(text, (self.x_pos / DISTANCE_SCALE - 18, self.y_pos / DISTANCE_SCALE - self.radius - 26))
 
+#3-body system
 #Earth = Planet(6 * 10 ** 24, 10, RGB_COLOURS["BLUE"], [100 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [-5 * 10 ** 3 , 2 * 10 ** 4])
 #Moon = Planet(7 * 10 ** 22, 6, RGB_COLOURS["WHITE"], [120 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [-5.1 * 10 ** 3 , 2.1 * 10 ** 4])
+#Sun = Planet("Sun", 2 * 10 ** 30, 15, RGB_COLOURS["ORANGE"], [SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 0])
 
 #REALISTIC MASSESS/Orbital veloicties
-Mercury = Planet(3.3 * 10 ** 23, 4, RGB_COLOURS["GREY"], [38 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 4.7 * 10 ** 4])
-Venus = Planet(4.9 * 10 ** 24, 8, RGB_COLOURS["WHITE"], [72 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 3.5 * 10 ** 4])
-Earth = Planet(6 * 10 ** 24, 8, RGB_COLOURS["BLUE"], [100 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 3 * 10 ** 4])
-Mars = Planet(6.4 * 10 ** 23, 4, RGB_COLOURS["RED"], [152 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 2.4 * 10 ** 4])
-Jupiter = Planet(1.9 * 10 ** 27, 12, RGB_COLOURS["GREEN"], [520 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 1.3 * 10 ** 4])
-Sun = Planet(2 * 10 ** 30, 15, RGB_COLOURS["ORANGE"], [SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 0])
-
+Mercury = Planet("Mecury", 3.3 * 10 ** 23, 4, RGB_COLOURS["GREY"], [38 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 4.7 * 10 ** 4])
+Venus = Planet("Venus", 4.9 * 10 ** 24, 8, RGB_COLOURS["WHITE"], [72 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 3.5 * 10 ** 4])
+Earth = Planet("Earth", 6 * 10 ** 24, 8, RGB_COLOURS["BLUE"], [100 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 3 * 10 ** 4])
+Mars = Planet("Mars", 6.4 * 10 ** 23, 4, RGB_COLOURS["RED"], [152 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 2.4 * 10 ** 4])
+Jupiter = Planet("Jupiter", 1.9 * 10 ** 27, 12, RGB_COLOURS["GREEN"], [520 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 1.3 * 10 ** 4])
+Sun = Planet("Sun", 2 * 10 ** 30, 15, RGB_COLOURS["ORANGE"], [SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 0])
 planet_list = [Mercury, Venus, Earth, Mars, Jupiter, Sun]
-
 #initialising dict to plot orbit path
 path_points = {}
 for planet in planet_list:
@@ -128,21 +127,22 @@ while running:
     # Did the user click the window close button?
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-    
-    Mouse_x, Mouse_y = pygame.mouse.get_pos()
-    print(Mouse_x, Mouse_y)
+            running = False      
     for Planet_i in planet_list:
         force = [0, 0]
         for Planet_j in planet_list:
+            #sum up forces on planet_i and update accelaration
             if Planet_i != Planet_j:
-                
-                force[0] += Planet_i.calc_force(Planet_j.get_pos(), Planet_j.get_mass())[0]
-                force[1] += Planet_i.calc_force(Planet_j.get_pos(), Planet_j.get_mass())[1] # dumb, find better way
-    
-        print("force =" , force)
+                x_force, y_force = Planet_i.calc_force(Planet_j.get_pos(), Planet_j.get_mass())
+                force[0] += x_force
+                force[1] += y_force   
         accel = [force[0] / Planet_i.get_mass(), force[1] / Planet_i.get_mass()]
+
         Planet_i.update_accel(accel)
-        Planet_i.draw()
+        Planet_i.draw_planet()
+    
+        Mouse_x, Mouse_y = pygame.mouse.get_pos()
+        if ((Planet_i.get_pos()[0] / DISTANCE_SCALE - 10 <= Mouse_x <= Planet_i.get_pos()[0] / DISTANCE_SCALE + 10) and (Planet_i.get_pos()[1] / DISTANCE_SCALE - 10  <= Mouse_y <= Planet_i.get_pos()[1] / DISTANCE_SCALE + 10)):
+            Planet_i.draw_planet_text()  
     pygame.display.update()
 pygame.quit()
