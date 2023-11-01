@@ -95,16 +95,19 @@ class Planet(object):
     
     def draw_planet(self): 
         self.set_scale_zoom_distances()
+        # Draw planet
+        pygame.draw.circle(screen, self.colour, (self.x_scaled, self.y_scaled), self.radius_scaled)
+        self.draw_planet_path()
+    
+    def draw_planet_path(self): 
         #draw path
         for i, point in enumerate(path_points[self]):
             #only draw point outside of planet radius
             planet_point_distance = self.calc_distance([point[0] * DISTANCE_SCALE, point[1] * DISTANCE_SCALE])
             if planet_point_distance > (self.radius_scaled * DISTANCE_SCALE):
                 pygame.draw.circle(screen, self.colour, (point[0], point[1]), 1)
-
         path_points[self].append([self.x_scaled, self.y_scaled])
-        # Draw planet
-        pygame.draw.circle(screen, self.colour, (self.x_scaled, self.y_scaled), self.radius_scaled)
+    
     def draw_planet_text(self):
             scaled_x = int((self.x_pos / DISTANCE_SCALE - SCREEN_WIDTH / 2) * zoom + SCREEN_WIDTH / 2)
             scaled_y = int((self.y_pos / DISTANCE_SCALE - SCREEN_HEIGHT / 2) * zoom + SCREEN_WIDTH / 2)
@@ -112,12 +115,21 @@ class Planet(object):
             text = PLANET_FONT.render(self.get_planet_name(), False, RGB_COLOURS["WHITE"])
             screen.blit(text, (scaled_x - 18, scaled_y - scaled_radius - 26))
 
+
 def set_zoom(scroll_increment, previous_zoom):
     if (previous_zoom < 0.2) & (scroll_increment == -1):
         zoom = previous_zoom
     else:    
         zoom = previous_zoom + scroll_increment / 10
     return zoom
+
+
+def initialise_path_points(planet_list):
+    #initialising dict to plot orbit path
+    path_points = {}
+    for planet in planet_list:
+        path_points[planet] = []
+    return path_points
 
 #REALISTIC MASSESS/Orbital veloicties
 Mercury = Planet("Mecury", 3.3 * 10 ** 23, 4, RGB_COLOURS["GREY"], [38 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 4.7 * 10 ** 4])
@@ -127,11 +139,9 @@ Mars = Planet("Mars", 6.4 * 10 ** 23, 4, RGB_COLOURS["RED"], [152 + SCREEN_WIDTH
 Jupiter = Planet("Jupiter", 1.9 * 10 ** 27, 12, RGB_COLOURS["GREEN"], [520 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 1.3 * 10 ** 4])
 Sun = Planet("Sun", 2 * 10 ** 30, 15, RGB_COLOURS["ORANGE"], [SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 0])
 planet_list = [Mercury, Venus, Earth, Mars, Jupiter, Sun]
-#initialising dict to plot orbit path
-path_points = {}
-for planet in planet_list:
-    path_points[planet] = []
-    
+
+path_points = initialise_path_points(planet_list)
+
 # Run until the user asks to quit
 running = True
 while running:
@@ -144,6 +154,7 @@ while running:
             running = False   
         elif event.type == pygame.MOUSEWHEEL:
             zoom = set_zoom(scroll_increment=event.y, previous_zoom=zoom)    
+            path_points = initialise_path_points(planet_list)
     for Planet_i in planet_list:
         force = [0, 0]
         for Planet_j in planet_list:
