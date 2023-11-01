@@ -9,6 +9,8 @@ import pygame
 import scipy
 
 pygame.init()
+# Set window caption
+pygame.display.set_caption('Solar Simulator')
 # Define constants for the screen width and height
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 1200
@@ -111,8 +113,10 @@ class Planet(object):
             screen.blit(text, (scaled_x - 18, scaled_y - scaled_radius - 26))
 
 def set_zoom(scroll_increment, previous_zoom):
-    zoom = previous_zoom + scroll_increment / 10
-    print(zoom)
+    if (previous_zoom < 0.2) & (scroll_increment == -1):
+        zoom = previous_zoom
+    else:    
+        zoom = previous_zoom + scroll_increment / 10
     return zoom
 
 #REALISTIC MASSESS/Orbital veloicties
