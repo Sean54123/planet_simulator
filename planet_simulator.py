@@ -23,7 +23,8 @@ FPS = 60
 G = 6.67 * 10 ** - 11
 AU = 1.50* 10 ** 11 #used to scale distance in force calcs
 DISTANCE_SCALE = AU / 100
-TIME_STEP = (1 / FPS) * 5 * 10 **6
+# timestep defines simulation speed, currently each second is one day
+TIME_STEP = (1 / FPS) * 8.64 * 10 ** 4
 RGB_COLOURS = {"WHITE": (255, 255, 255), "RED": (255, 0, 0) , "BLUE": (0, 0, 255), "ORANGE": (255, 153, 0), "GREY": (102, 102, 153), "GREEN": (102, 153, 153)}
 PLANET_FONT = pygame.font.SysFont("cambriamath", 20)
 
