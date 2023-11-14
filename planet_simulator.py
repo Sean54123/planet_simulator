@@ -132,6 +132,16 @@ def initialise_path_points(planet_list):
         path_points[planet] = []
     return path_points
 
+def pause():
+    paused = True
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    paused = False
+    return
+
+
 #REALISTIC MASSESS/Orbital veloicties
 Mercury = Planet("Mecury", 3.3 * 10 ** 23, 4, RGB_COLOURS["GREY"], [38 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0, 4.7 * 10 ** 4])
 Venus = Planet("Venus", 4.9 * 10 ** 24, 8, RGB_COLOURS["WHITE"], [72 + SCREEN_WIDTH / 2, SCREEN_HEIGHT/ 2] , [0 , 3.5 * 10 ** 4])
@@ -156,6 +166,10 @@ while running:
         elif event.type == pygame.MOUSEWHEEL:
             zoom = set_zoom(scroll_increment=event.y, previous_zoom=zoom)    
             path_points = initialise_path_points(planet_list)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_p:
+                pause()
+
     for Planet_i in planet_list:
         force = [0, 0]
         for Planet_j in planet_list:
